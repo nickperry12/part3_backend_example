@@ -92,7 +92,7 @@ app.post('/api/notes', (request, response) => {
     id: generateId(),
   }
 
-  notes.concat(note);
+  notes = notes.concat(note);
   console.log(note);
   response.json(note);
 });
