@@ -1,10 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const Note = require('./models/note');
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static('dist'));
+app.set('json spaces', 2);
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -53,7 +55,10 @@ app.get('/', (request, response) => {
 
 // fetch all notes
 app.get('/api/notes', (request, response) => {
-  response.json(notes);
+  Note.find({})
+    .then(notes => {
+      response.json(notes);
+    })
 });
 
 // fetch a single note
@@ -97,7 +102,7 @@ app.post('/api/notes', (request, response) => {
   response.json(note);
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
