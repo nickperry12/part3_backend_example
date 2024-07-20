@@ -7,22 +7,24 @@ const Note = require('./models/note');
 app.use(express.static('dist'));
 
 const requestLogger = (request, response, next) => {
-  console.log('Method:', request.method)
-  console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
-  console.log('---')
+  console.log('Method:', request.method);
+  console.log('Path:  ', request.path);
+  console.log('Body:  ', request.body);
+  console.log('---');
   next();
-}
+};
 
 const errorHandler = (error, req, res, next) => {
   console.error(error.message);
 
   if (error.name === 'CastError') {
-    return res.status(400).send({ error: 'malformatted id' })
+    return res.status(400).send({ error: 'malformatted id' });
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message });
   }
 
   next(error);
-}
+};
 
 const cors = require('cors');
 
@@ -32,8 +34,8 @@ app.use(requestLogger);
 app.set('json spaces', 2);
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
+  response.status(404).send({ error: 'unknown endpoint' });
+};
 
 
 // get home page
@@ -46,7 +48,7 @@ app.get('/api/notes', (request, response) => {
   Note.find({})
     .then(notes => {
       response.json(notes);
-    })
+    });
 });
 
 // fetch a single note
@@ -68,47 +70,50 @@ app.get('/api/notes/:id', (request, response, next) => {
 // delete a single note
 app.delete('/api/notes/:id', (request, response, next) => {
   const id = request.params.id;
-  Note.findByIdAndDelete
+  Note.findByIdAndDelete(id)
     .then(result => {
       result.status(404).end();
     })
     .catch(error => {
       next(error);
-    })
+    });
 });
 
 // create a new note
-app.post('/api/notes', (request, response) => {
+app.post('/api/notes', (request, response, next) => {
   const body = request.body;
 
   if (!body.content) {
     return response.status(400).json({
       error: 'content missing'
-    })
+    });
   }
 
   const note = new Note({
     content: body.content,
     important: body.important || false
-  })
+  });
 
   note.save()
     .then(savedNote => {
       response.json(savedNote);
     })
-    .catch(error => console.error('There was an error: ', error));
+    .catch(error => {
+      next(error);
+    });
 });
 
+// updates a note information
 app.put('/api/notes/:id', (request, response, next) => {
   const id = request.params.id;
   const body = request.body;
+  const { content, important } = body;
 
-  const note = {
-    content: body.content,
-    important: body.important
-  }
-
-  Note.findByIdAndUpdate(id, note, { new: true })
+  Note.findByIdAndUpdate(
+    id,
+    { content, important },
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(updatedNote => {
       response.json(updatedNote);
     })

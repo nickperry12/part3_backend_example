@@ -13,7 +13,7 @@ mongoose.set('strictQuery', false);
 
 // connects to the database
 mongoose.connect(url)
-  .then(result => {
+  .then(() => {
     console.log('Connected to MongoDB!');
   })
   .catch(err => {
@@ -22,15 +22,19 @@ mongoose.connect(url)
 
 // sets the schema of the documents being saved to the database
 const noteSchema = new mongoose.Schema({
-  content: String,
+  content: {
+    type: String,
+    minLength: 5,
+    required: true
+  },
   important: Boolean,
 });
 
 noteSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
   }
 });
 
