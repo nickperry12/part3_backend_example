@@ -12,8 +12,8 @@ const password = process.argv[2];
 // url for the database we're working with
 // replace with the database we wish to use
 // best practice to use a `.env` file to store the URL and password
-const url = 
-  `mongodb+srv://nickperry604:${password}@fullstackcourse.gdpv3p1.mongodb.net/noteApp?retryWrites=true&w=majority&appName=FullstackCourse`
+const url =
+  `mongodb+srv://nickperry604:${password}@fullstackcourse.gdpv3p1.mongodb.net/testNoteApp?retryWrites=true&w=majority&appName=FullstackCourse`;
 
 
 // when set to true, ensures that only the fields specified
@@ -43,8 +43,8 @@ const note = new Note({
 // Saves the document to the database
 note.save().then(result => {
   console.log('note saved!', result);
-  mongoose.connection.close();
-})
+  // mongoose.connection.close();
+});
 
 // Retrieves the entire list of notes
 Note.find({}).then(result => {
