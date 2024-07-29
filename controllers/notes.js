@@ -43,7 +43,7 @@ notesRouter.post('/', async (req, res) => {
   const note = new Note({
     content: body.content,
     important: body.important || false,
-    user: user.id
+    user: user._id
   });
 
   const savedNote = await note.save();
@@ -58,7 +58,7 @@ notesRouter.delete('/:id', async (req, res) => {
   res.status(204).end();
 });
 
-notesRouter.put('/:id', async (req, res) => {
+notesRouter.put('/:id', async (req, res, next) => {
   const body = req.body;
   const id = req.params.id;
 
@@ -67,8 +67,13 @@ notesRouter.put('/:id', async (req, res) => {
     important: body.important
   };
 
-  const updatedNote = await Note.findById(id, note, { new: true });
-  res.json(updatedNote);
+  await Note.findById(id, note, { new: true })
+    .then(updatedNote => {
+      res.json(updatedNote);
+    })
+    .catch(error => {
+      next(error);
+    });
 });
 
 module.exports = notesRouter;
